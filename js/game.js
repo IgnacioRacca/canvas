@@ -19,6 +19,9 @@
         highscoresScene = null,
         body = [],
         food = null,
+        bonus = null,
+        count = 0,
+        capture = false,
         //var wall = [],
         highscores = [],
         posHighscore = 10,
@@ -26,6 +29,7 @@
         score = 0,
         iBody = new Image(),
         iFood = new Image(),
+        iBonus = new Image(),
         aEat = new Audio(),
         aDie = new Audio();
 
@@ -140,14 +144,17 @@
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
 
-        // Load assets
-        iBody.src = 'assets/body.png';
-        iFood.src = 'assets/fruit.png';
-        aEat.src = 'assets/chomp.m4a';
-        aDie.src = 'assets/dies.m4a';
+        // // Load assets
+        // iBody.src = 'assets/body.png';
+        // iFood.src = 'assets/fruit.png';
+        // aEat.src = 'assets/chomp.m4a';
+        // aDie.src = 'assets/dies.m4a';
 
         // Create food
         food = new Rectangle(80, 80, 10, 10);
+
+        // create bonus
+        bonus = new Rectangle(50, 50, 10, 10);
 
         // Create walls
         //wall.push(new Rectangle(50, 50, 10, 10));
@@ -159,6 +166,18 @@
         if (localStorage.highscores) {
             highscores = localStorage.highscores.split(',');
         }
+
+        //send score
+        fetch('https://jsonplaceholder.typicode.com/?score=`${score}`')
+        .then(function(response){
+            if (capture === true) {
+                console.log('Score sent successfully ', `${score}`);
+                capture = false;
+            }
+        })
+        .catch(function(error) {
+            console.log('Error trying to send the score');
+        });
         
         // Start game
         run();
@@ -200,6 +219,9 @@
         body.push(new Rectangle(0, 0, 10, 10));
         food.x = random(canvas.width / 10 - 1) * 10;
         food.y = random(canvas.height / 10 - 1) * 10;
+
+        bonus.x = random(canvas.width / 9 - 1) * 9;
+        bonus.y = random(canvas.height / 9 - 1) * 9;
         gameover = false;
     };
 
@@ -226,6 +248,14 @@
         // Draw food
         ctx.strokeStyle = '#f00';
         food.drawImage(ctx, iFood);
+
+        // Draw bonus
+        if (count === 5) {
+            ctx.strokeStyle = '#F2F91A';
+            bonus.drawImage(ctx, iBonus); 
+        }
+        
+
 
         // Draw score
         ctx.fillStyle = '#fff';
@@ -311,6 +341,22 @@
                 food.x = random(canvas.width / 10 - 1) * 10;
                 food.y = random(canvas.height / 10 - 1) * 10;
                 aEat.play();
+                if(count < 5){
+                    count += 1;
+                }else{
+                    count = 0;
+                }
+            }
+
+            // Bonus Intersects
+            if (body[0].intersects(bonus) && count === 5) {
+                score += 10;
+                count = 0;
+                capture = true;
+                bonus.x = random(canvas.width / 10 - 1) * 10;
+                bonus.y = random(canvas.height / 10 - 1) * 10;
+                aEat.play();
+                console.log('caputre ',`${score}`);
             }
 
             // Wall Intersects
@@ -377,7 +423,19 @@
             lastPress = null;
         }
     };
-    
+
+    //send score
+    fetch('https://jsonplaceholder.typicode.com/?score=`${score}`')
+    .then(function(response){
+        if (capture === true) {
+            console.log('Score sent successfully ', `${score}`);
+            capture = false;
+        }
+    })
+    .catch(function(error) {
+        console.log('Error trying to send the score');
+    });
+
     window.addEventListener('load', init, false);
 }(window));
                 

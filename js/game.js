@@ -166,19 +166,7 @@
         if (localStorage.highscores) {
             highscores = localStorage.highscores.split(',');
         }
-
-        //send score
-        fetch('https://jsonplaceholder.typicode.com/?score=`${score}`')
-        .then(function(response){
-            if (capture === true) {
-                console.log('Score sent successfully ', `${score}`);
-                capture = false;
-            }
-        })
-        .catch(function(error) {
-            console.log('Error trying to send the score');
-        });
-        
+      
         // Start game
         run();
         repaint();
@@ -270,6 +258,7 @@
             ctx.textAlign = 'center';
             if (gameover) {
                 ctx.fillText('GAME OVER', 150, 75);
+                count = 0;
             } else {
                 ctx.fillText('PAUSE', 150, 75);
             }
@@ -341,7 +330,7 @@
                 food.x = random(canvas.width / 10 - 1) * 10;
                 food.y = random(canvas.height / 10 - 1) * 10;
                 aEat.play();
-                if(count < 5){
+                if(count <= 5){
                     count += 1;
                 }else{
                     count = 0;
@@ -356,7 +345,7 @@
                 bonus.x = random(canvas.width / 10 - 1) * 10;
                 bonus.y = random(canvas.height / 10 - 1) * 10;
                 aEat.play();
-                console.log('caputre ',`${score}`);
+                console.log('Score sent successfully ', `${score}`);
             }
 
             // Wall Intersects
@@ -425,16 +414,19 @@
     };
 
     //send score
-    fetch('https://jsonplaceholder.typicode.com/?score=`${score}`')
-    .then(function(response){
-        if (capture === true) {
-            console.log('Score sent successfully ', `${score}`);
-            capture = false;
-        }
-    })
-    .catch(function(error) {
-        console.log('Error trying to send the score');
-    });
+    fetch(`https://jsonplaceholder.typicode.com/?score=${score}`)
+        .then(function(response){
+            return response.text();
+        })
+        .then(function(score){
+            if (capture === true) {
+                console.log('Score sent successfully ', `${score}`);
+                capture = false;
+            }
+        })
+        .catch(function(error) {
+            console.log('Error trying to send the score');
+        });
 
     window.addEventListener('load', init, false);
 }(window));
